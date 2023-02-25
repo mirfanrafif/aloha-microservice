@@ -20,7 +20,7 @@ import { CUSTOMER_REPOSITORY } from '../repository/customer/customer.module';
 import { Role, UserEntity } from '../repository/user/user.entity';
 import { USER_REPOSITORY } from '../repository/user/user.module';
 import { ApiResponse } from '../../utils/apiresponse.dto';
-import { Like, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import {
   CrmCustomer,
   CustomerCategoriesResponse,
@@ -29,6 +29,7 @@ import {
   CustomerResponse,
   LoginResponse,
 } from './customer-crm.dto';
+import { convertPhoneNumber } from '../../customer/customer.helper';
 
 const pageSize = 20;
 
@@ -204,7 +205,7 @@ export class CustomerCrmService {
       map(async (customers) => {
         let newCustomers = await customers;
         if (newCustomers.length === 0) {
-          const convertedPhoneNumber = this.convertPhoneNumber(phoneNumber);
+          const convertedPhoneNumber = convertPhoneNumber(phoneNumber);
           if (convertedPhoneNumber === undefined) {
             const newCustomers: CustomerEntity[] = [];
             return newCustomers;
@@ -225,7 +226,7 @@ export class CustomerCrmService {
         return customers;
       }),
       catchError(async () => {
-        const convertedPhoneNumber = this.convertPhoneNumber(phoneNumber);
+        const convertedPhoneNumber = convertPhoneNumber(phoneNumber);
         if (convertedPhoneNumber === undefined) {
           const newCustomers: CustomerEntity[] = [];
           return newCustomers;
@@ -234,6 +235,62 @@ export class CustomerCrmService {
         const customers = await this.customerRepository.find({
           where: {
             phoneNumber: Like(convertedPhoneNumber),
+          },
+          take: pageSize,
+          order: {
+            name: 'ASC',
+          },
+        });
+        return customers;
+      }),
+    );
+  }
+
+  findWithPhoneNumberList(phoneNumber: string[]) {
+    const phoneNumberString = phoneNumber.join(',');
+    return this.getCustomerFromCrm({
+      'filter.telephones': '$in:' + phoneNumberString,
+      limit: 1000,
+    }).pipe(
+      map(async (customers) => {
+        let newCustomers = await customers;
+        if (newCustomers.length === 0) {
+          const convertedPhoneNumber = phoneNumber
+            .map((phoneNumber) => {
+              return convertPhoneNumber(phoneNumber);
+            })
+            .filter((item) => item !== undefined);
+          if (convertedPhoneNumber === undefined) {
+            const newCustomers: CustomerEntity[] = [];
+            return newCustomers;
+          }
+
+          newCustomers = await this.customerRepository.find({
+            where: {
+              phoneNumber: In(convertedPhoneNumber),
+            },
+            take: pageSize,
+            order: {
+              name: 'ASC',
+            },
+          });
+          return newCustomers;
+        }
+
+        return customers;
+      }),
+      catchError(async () => {
+        const convertedPhoneNumber = phoneNumber.map((phoneNumber) => {
+          return convertPhoneNumber(phoneNumber);
+        });
+        if (convertedPhoneNumber === undefined) {
+          const newCustomers: CustomerEntity[] = [];
+          return newCustomers;
+        }
+
+        const customers = await this.customerRepository.find({
+          where: {
+            phoneNumber: In(convertedPhoneNumber),
           },
           take: pageSize,
           order: {
@@ -275,7 +332,7 @@ export class CustomerCrmService {
     const newCustomers: CustomerEntity[] = [];
 
     for (const customer of customers) {
-      const phoneNumber = this.convertPhoneNumber(customer.telephones);
+      const phoneNumber = convertPhoneNumber(customer.telephones);
 
       //jika sudah ada di list, maka lewati
       if (
@@ -491,27 +548,5 @@ export class CustomerCrmService {
     }
 
     return newCustomers;
-  }
-
-  convertPhoneNumber(telephones: string): string | undefined {
-    let phoneNumber = '';
-
-    const telephonesArray = telephones.split(',');
-
-    if (telephonesArray.length == 0) {
-      return;
-    }
-
-    if (telephonesArray[0].startsWith('0')) {
-      phoneNumber = '62' + telephonesArray[0].slice(1);
-    } else {
-      phoneNumber = telephonesArray[0];
-    }
-
-    if (phoneNumber.length === 0) return;
-    phoneNumber = phoneNumber.split('-').join('');
-    phoneNumber = phoneNumber.split(' ').join('');
-
-    return phoneNumber;
   }
 }

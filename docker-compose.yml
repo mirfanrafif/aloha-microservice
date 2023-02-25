@@ -2,8 +2,8 @@ version: '3.7'
 services:
   app:
     build:
-      context: ./
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: aloha-api.Dockerfile
     image: aloha_api_app
     container_name: aloha_api_app
     restart: unless-stopped
@@ -15,6 +15,21 @@ services:
       - aloha_api
     volumes:
       - ./uploads/:/app/aloha-api/uploads
+  messages:
+    build:
+      context: .
+      dockerfile: message-service.Dockerfile
+    image: aloha_message
+    container_name: aloha_message
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    networks:
+      - aloha_api
+    volumes:
+      - ./uploads/:/app/aloha-message/uploads
   db:
     image: mysql:8.0
     container_name: aloha_api_db

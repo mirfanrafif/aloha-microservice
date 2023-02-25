@@ -132,7 +132,6 @@ export class WablasService {
   }
 
   sendMessageUsingRedis(request: WablasSendMessageRequest) {
-    console.log('request', request);
     return this.client.send('wablas_send_message', request);
   }
 }

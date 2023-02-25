@@ -4,9 +4,10 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { AxiosError, AxiosResponse } from 'axios';
-import { catchError, map } from 'rxjs';
+import { catchError, lastValueFrom, map } from 'rxjs';
 import {
   MessageEntity,
   MessageStatus,
@@ -53,6 +54,8 @@ import {
   WablasSendMessageRequest,
   WablasSendVideoRequest,
 } from '@aloha/message-library/wablas.dto';
+import { CustomerCrmService } from '../../core/pukapuka/customer-crm.service';
+import { convertPhoneNumber } from '../../customer/customer.helper';
 
 const pageSize = 20;
 
@@ -63,6 +66,7 @@ export class MessageService {
     @Inject(MESSAGE_REPOSITORY)
     private messageRepository: Repository<MessageEntity>,
     private customerService: CustomerService,
+    private customerCrmService: CustomerCrmService,
     private conversationService: ConversationService,
     private userJobService: UserJobService,
     private userService: UserService,
@@ -385,23 +389,47 @@ export class MessageService {
     bulkMessageRequest: BulkMessageRequestDto;
     agent: UserEntity;
   }) {
+    //phone number no duplicate / map
+    const phoneNumberMap = bulkMessageRequest.messages
+      .map((message) => {
+        return message.customerNumber;
+      })
+      .reduce((map, obj) => {
+        map[obj] = obj;
+        return map;
+      }, {} as { [key: string]: string });
+    const phoneNumberList = Object.keys(phoneNumberMap);
+
+    console.log(phoneNumberList);
+
+    //find customer from crm with those numbers
+    const customerList = await lastValueFrom(
+      this.customerCrmService.findWithPhoneNumberList(phoneNumberList),
+    );
+
     //templating request
     const request: WablasSendMessageRequest = {
       data: await Promise.all(
-        bulkMessageRequest.messages.map(async (message) => {
-          const customer =
-            await this.customerService.searchCustomerWithPhoneNumber(
-              message.customerNumber,
+        bulkMessageRequest.messages
+          .filter((value) => phoneNumberList.includes(value.customerNumber))
+          .map(async (message) => {
+            const customer = customerList.find(
+              (item) =>
+                item.phoneNumber === convertPhoneNumber(message.customerNumber),
             );
-
-          return {
-            message: message.message,
-            isGroup: false,
-            phone: customer.phoneNumber,
-            retry: true,
-            secret: false,
-          };
-        }),
+            if (customer === undefined) {
+              throw new NotFoundException(
+                `Phone number ${message.customerNumber} not found`,
+              );
+            }
+            return {
+              message: message.message,
+              isGroup: false,
+              phone: customer.phoneNumber,
+              retry: true,
+              secret: false,
+            };
+          }),
       ),
     };
 

@@ -7,11 +7,11 @@ WORKDIR /app/aloha-api
 
 COPY package*.json ./
 
-RUN npm ci
+RUN npm install
 
 COPY . .
 
-RUN npm run build && npm prune --production
+RUN npm run build aloha-api && npm prune --production
 
 # run 
 FROM node:16.13-alpine
@@ -26,4 +26,4 @@ COPY --from=build /app/aloha-api/package*.json ./
 COPY --from=build /app/aloha-api/node_modules/ ./node_modules/
 COPY --from=build /app/aloha-api/dist/ ./dist/
 
-CMD node dist/main.js
+CMD node dist/apps/aloha-api/main.js

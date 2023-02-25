@@ -1,5 +1,12 @@
 import { IsNotEmpty, IsEnum } from 'class-validator';
 
+export enum MessageType {
+  text = 'text',
+  document = 'document',
+  image = 'image',
+  video = 'video',
+}
+
 export type WablasSendMessageRequest = {
   data: WablasSendMessageRequestData[];
 };
@@ -17,13 +24,6 @@ export type WablasSendMessageRequestData = {
   retry: boolean;
   isGroup: boolean;
 };
-
-export enum MessageType {
-  text = 'text',
-  document = 'document',
-  image = 'image',
-  video = 'video',
-}
 
 export type WablasSendDocumentRequest = {
   data: WablasSendDocumentRequestData[];

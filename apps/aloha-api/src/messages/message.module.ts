@@ -10,6 +10,7 @@ import { UserJobModule } from '../job/user-job.module';
 import { UserModule } from '../user/user.module';
 import { MessageHelper } from './helper/message.helper';
 import { WablasModule } from '../core/wablas/wablas.module';
+import { CustomerCrmModule } from '../core/pukapuka/customer-crm.module';
 
 @Module({
   providers: [
@@ -26,6 +27,7 @@ import { WablasModule } from '../core/wablas/wablas.module';
     ConversationRepositoryModule,
     UserJobModule,
     WablasModule,
+    CustomerCrmModule,
   ],
 })
 export class MessageModule {}
