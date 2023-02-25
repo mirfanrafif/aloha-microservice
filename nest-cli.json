@@ -25,6 +25,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/message-microservice/tsconfig.app.json"
       }
+    },
+    "message-library": {
+      "type": "library",
+      "root": "libs/message-library",
+      "entryFile": "index",
+      "sourceRoot": "libs/message-library/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/message-library/tsconfig.lib.json"
+      }
     }
   }
 }

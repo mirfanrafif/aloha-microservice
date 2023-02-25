@@ -1,4 +1,3 @@
-import { HttpService } from '@nestjs/axios';
 import {
   BadRequestException,
   HttpException,
@@ -19,8 +18,6 @@ import { WablasAPIException } from '../../utils/wablas.exception';
 import { LessThan, Repository } from 'typeorm';
 import {
   MessageRequestDto,
-  TextMessage,
-  MessageType,
   MessageResponseDto,
   DocumentRequestDto,
   MessageTrackingDto,
@@ -41,21 +38,21 @@ import {
 import { UserService } from '../../user/user.service';
 import { isEnum } from 'class-validator';
 import { WablasService } from '../../core/wablas/wablas.service';
-import { response } from 'express';
-import { createWriteStream } from 'fs';
 import { MessageHelper } from '../helper/message.helper';
 
 import {
   MessageResponseItem,
+  MessageType,
   SendDocumentResponse,
   SendImageVideoResponse,
   SendMessageResponseData,
+  TextMessage,
   WablasApiResponse,
   WablasSendDocumentRequest,
   WablasSendImageRequest,
   WablasSendMessageRequest,
   WablasSendVideoRequest,
-} from '../../core/wablas/wablas.dto';
+} from '@aloha/message-library/wablas.dto';
 
 const pageSize = 20;
 
@@ -408,45 +405,37 @@ export class MessageService {
       ),
     };
 
-    //ambil dulu data2 customer yang di blast dari crm, lalu simpan ke aloha
-    for (const message of bulkMessageRequest.messages) {
-    }
-
     //buat request ke WABLAS API
-    return this.wablasService.sendMessage(request).pipe(
-      map(
-        async (
-          response: AxiosResponse<WablasApiResponse<SendMessageResponseData>>,
-        ) => {
-          //save ke database
-          const messages = await Promise.all(
-            response.data.data.messages.map((item) => {
-              return this.saveOutgoingBulkMessage({
-                messageItem: item,
-                agent: agent,
-              });
-            }),
-          );
+    return this.wablasService.sendMessageUsingRedis(request).pipe(
+      map(async (response: WablasApiResponse<SendMessageResponseData>) => {
+        //save ke database
+        const messages = await Promise.all(
+          response.data.messages.map((item) => {
+            return this.saveOutgoingBulkMessage({
+              messageItem: item,
+              agent: agent,
+            });
+          }),
+        );
 
-          //kirim ke frontend lewat websocket
-          const messageResponses = await Promise.all(
-            messages.map(async (message: MessageEntity) => {
-              const response =
-                this.messageHelper.mapMessageEntityToResponse(message);
-              await this.gateway.sendMessage({ data: response });
-              return response;
-            }),
-          );
+        //kirim ke frontend lewat websocket
+        const messageResponses = await Promise.all(
+          messages.map(async (message: MessageEntity) => {
+            const response =
+              this.messageHelper.mapMessageEntityToResponse(message);
+            await this.gateway.sendMessage({ data: response });
+            return response;
+          }),
+        );
 
-          //return result
-          const result: ApiResponse<MessageResponseDto[]> = {
-            success: true,
-            data: messageResponses,
-            message: 'Success sending message to Wablas API',
-          };
-          return result;
-        },
-      ),
+        //return result
+        const result: ApiResponse<MessageResponseDto[]> = {
+          success: true,
+          data: messageResponses,
+          message: 'Success sending message to Wablas API',
+        };
+        return result;
+      }),
       catchError((value: AxiosError<WablasApiResponse<null>>) => {
         if (value.response !== undefined) {
           throw new WablasAPIException(

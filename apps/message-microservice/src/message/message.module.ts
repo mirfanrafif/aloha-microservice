@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { WablasModule } from 'src/core/wablas/wablas.module';
+import { WablasModule } from '../core/wablas/wablas.module';
 import { MessageController } from './message.controller';
 
 @Module({

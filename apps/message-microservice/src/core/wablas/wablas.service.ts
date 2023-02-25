@@ -15,7 +15,7 @@ import {
   WablasSendImageRequest,
   WablasSendMessageRequest,
   WablasSendVideoRequest,
-} from '../../../../libs/message/src/wablas.dto';
+} from '@aloha/message-library/wablas.dto';
 
 @Injectable()
 export class WablasService {

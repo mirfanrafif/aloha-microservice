@@ -1,3 +1,4 @@
+import { TextMessage } from '@aloha/message-library/wablas.dto';
 import {
   Body,
   ClassSerializerInterceptor,
@@ -27,7 +28,6 @@ import {
   MessageResponseDto,
   MessageTrackingDto,
   SendDocumentViaUrlDto,
-  TextMessage,
 } from '../message.dto';
 import { MessageService } from '../services/message.service';
 

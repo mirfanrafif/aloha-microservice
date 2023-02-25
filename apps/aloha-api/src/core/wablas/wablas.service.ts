@@ -1,9 +1,10 @@
+import { MessageType, TextMessage } from '@aloha/message-library/wablas.dto';
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { AxiosResponse } from 'axios';
 import { createWriteStream } from 'fs';
 import { Observable } from 'rxjs';
-import { MessageType, TextMessage } from '../../messages/message.dto';
 import {
   SendDocumentResponse,
   SendImageVideoResponse,
@@ -17,7 +18,10 @@ import {
 
 @Injectable()
 export class WablasService {
-  constructor(private http: HttpService) {}
+  constructor(
+    private http: HttpService,
+    @Inject('WABLAS_SERVICE') private client: ClientProxy,
+  ) {}
 
   sendMessage(
     request: WablasSendMessageRequest,
@@ -125,5 +129,10 @@ export class WablasService {
       default:
         return '';
     }
+  }
+
+  sendMessageUsingRedis(request: WablasSendMessageRequest) {
+    console.log('request', request);
+    return this.client.send('wablas_send_message', request);
   }
 }

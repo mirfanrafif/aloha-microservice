@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
-import { WablasSendMessageRequest } from 'src/core/wablas/wablas.dto';
-import { WablasService } from 'src/core/wablas/wablas.service';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { WablasSendMessageRequest } from '@aloha/message-library/wablas.dto';
+import { WablasService } from '../core/wablas/wablas.service';
 
 @Controller('message')
 export class MessageController {

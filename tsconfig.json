@@ -18,6 +18,13 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "strictFunctionTypes": true,
-    "paths": {}
+    "paths": {
+      "@aloha/message-library": [
+        "libs/message-library/src"
+      ],
+      "@aloha/message-library/*": [
+        "libs/message-library/src/*"
+      ]
+    }
   }
 }

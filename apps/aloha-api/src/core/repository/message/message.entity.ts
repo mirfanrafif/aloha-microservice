@@ -1,4 +1,4 @@
-import { MessageType } from '../../../messages/message.dto';
+import { MessageType } from '@aloha/message-library';
 import {
   Column,
   CreateDateColumn,

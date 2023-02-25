@@ -1,3 +1,4 @@
+import { MessageType } from '@aloha/message-library';
 import {
   IsArray,
   IsEnum,
@@ -11,36 +12,6 @@ import { CustomerEntity } from '../core/repository/customer/customer.entity';
 import { MessageStatus } from '../core/repository/message/message.entity';
 import { UserEntity } from '../core/repository/user/user.entity';
 
-export enum MessageType {
-  text = 'text',
-  document = 'document',
-  image = 'image',
-  video = 'video',
-}
-
-export type Group = {
-  subject: string;
-  owner: string;
-  desc: string;
-};
-export class TextMessage {
-  id: string;
-  pushName: string;
-  isGroup: boolean;
-  group: Group;
-  message: string;
-  phone: string;
-
-  @IsNotEmpty()
-  @IsEnum(MessageType)
-  messageType: MessageType;
-
-  file: string;
-  mimeType: string;
-  // thumbProfile: string;
-  sender: number;
-  timestamp: number;
-}
 export class MessageRequestDto {
   @IsNotEmpty()
   customerNumber: string;

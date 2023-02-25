@@ -22,10 +22,10 @@ import {
   BroadcastMessageRequest,
   BroadcastImageMessageRequestDto,
   BroadcastDocumentMessageRequestDto,
-  MessageType,
 } from '../messages/message.dto';
 
 import {
+  MessageType,
   SendDocumentResponse,
   SendImageVideoResponse,
   SendMessageResponseData,
@@ -38,7 +38,7 @@ import {
   WablasSendMessageRequestData,
   WablasSendVideoRequest,
   WablasSendVideoRequestData,
-} from '../core/wablas/wablas.dto';
+} from '@aloha/message-library/wablas.dto';
 import { MessageGateway } from '../messages/gateways/message.gateway';
 import { WablasService } from '../core/wablas/wablas.service';
 
