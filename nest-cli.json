@@ -1,0 +1,30 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/aloha-api/src",
+  "monorepo": true,
+  "root": "apps/aloha-api",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/aloha-api/tsconfig.app.json"
+  },
+  "projects": {
+    "aloha-api": {
+      "type": "application",
+      "root": "apps/aloha-api",
+      "entryFile": "main",
+      "sourceRoot": "apps/aloha-api/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/aloha-api/tsconfig.app.json"
+      }
+    },
+    "message-microservice": {
+      "type": "application",
+      "root": "apps/message-microservice",
+      "entryFile": "main",
+      "sourceRoot": "apps/message-microservice/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/message-microservice/tsconfig.app.json"
+      }
+    }
+  }
+}
